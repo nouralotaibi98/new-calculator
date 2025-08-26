@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>حاسبة كفاءة الطاقة</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="brand-mark">KW</div>
+      <div>
+        <div class="brand-title">وزارة الكهرباء والماء والطاقة المتجددة – الكويت</div>
+        <div class="brand-sub">بوابة توعوية غير رسمية</div>
+      </div>
+    </div>
+  </header>
+  <nav class="nav">
+    <div class="container">
+      <div>
+        <a href="index.html">الرئيسية</a>
+        <a href="info.html">معلومات</a>
+        <a href="calculator.html" class="btn">الحاسبة</a>
+      </div>
+      <span class="badge">نسخة تجريبية</span>
+    </div>
+  </nav>
+
+  <main class="container" style="margin-top:18px">
+    <div class="grid cols-2">
+      <section class="card">
+        <span class="kicker">بيانات المبنى</span>
+        <div class="grid cols-2">
+          <div>
+            <label>مساحة المبنى (m²)</label>
+            <input type="number" id="area" min="1" step="0.01" placeholder="مثال: 250">
+          </div>
+          <div>
+            <label>عدد السكان/المستخدمين</label>
+            <input type="number" id="occupants" min="0" step="1" placeholder="مثال: 5">
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--ring);margin:14px 0"/>
+
+        <span class="kicker">التكييف (HVAC)</span>
+        <div class="grid cols-3">
+          <div>
+            <label>عدد أجهزة التكييف</label>
+            <input type="number" id="acCount" min="0" step="1" placeholder="مثال: 4">
+          </div>
+          <div>
+            <label>القدرة لكل جهاز (kW)</label>
+            <input type="number" id="acPower" min="0" step="0.01" placeholder="مثال: 2.5">
+          </div>
+          <div>
+            <label>ساعات التشغيل باليوم</label>
+            <input type="number" id="acHours" min="0" step="0.1" placeholder="مثال: 8">
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--ring);margin:14px 0"/>
+
+        <span class="kicker">الإنارة</span>
+        <div class="grid cols-3">
+          <div>
+            <label>عدد وحدات الإنارة</label>
+            <input type="number" id="ltCount" min="0" step="1" placeholder="مثال: 20">
+          </div>
+          <div>
+            <label>القدرة للوحدة (kW)</label>
+            <input type="number" id="ltPower" min="0" step="0.001" placeholder="مثال: 0.012">
+          </div>
+          <div>
+            <label>ساعات التشغيل باليوم</label>
+            <input type="number" id="ltHours" min="0" step="0.1" placeholder="مثال: 6">
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--ring);margin:14px 0"/>
+
+        <span class="kicker">الأجهزة الكهربائية الأخرى</span>
+        <div class="grid cols-2">
+          <div>
+            <label>استهلاك الأجهزة الأخرى السنوي (kWh/سنة) – إن وجد</label>
+            <input type="number" id="devAnnualInput" min="0" step="0.01" placeholder="مثال: 1200">
+          </div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" id="calcBtn">احسب</button>
+          <button class="btn ghost" id="resetBtn">إعادة الضبط</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <span class="kicker">النتائج</span>
+        <div class="stat"><div class="name">استهلاك التكييف السنوي</div><div class="value" id="acAnnual">0 kWh/سنة</div></div>
+        <div class="stat"><div class="name">استهلاك الإنارة السنوي</div><div class="value" id="ltAnnual">0 kWh/سنة</div></div>
+        <div class="stat"><div class="name">استهلاك الأجهزة الأخرى السنوي</div><div class="value" id="devAnnual">0 kWh/سنة</div></div>
+        <div class="stat"><div class="name">الاستهلاك الكلي السنوي</div><div class="value" id="totalAnnual">0 kWh/سنة</div></div>
+        <div class="stat"><div class="name">كثافة الاستهلاك (EUI)</div><div class="value" id="eui">0 kWh/m²·سنة</div></div>
+
+        <div class="pill" id="labelBox" style="margin-top:10px">
+          <div style="flex:1">
+            <div style="font-size:13px;color:#64748b">تصنيف كفاءة استهلاك الطاقة</div>
+            <div id="labelText" style="font-size:28px;font-weight:900">—</div>
+          </div>
+          <div id="labelBadge" class="badge">—</div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px">
+            <h3 style="margin:0">حدود التصنيف (قابلة للتعديل)</h3>
+          </div>
+          <table class="table" id="thresholdTable">
+            <thead><tr><th>الفئة</th><th>حتى (kWh/m²·سنة)</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p class="note">يُسند التصنيف عبر مقارنة EUI مع الحدود: يتم اختيار أول فئة حدّها الأعلى ≥ قيمة EUI. إذا تجاوزت EUI جميع الحدود تُسند الفئة E. الحدود أدناه لأغراض توعوية.</p>
+        </div>
+      </section>
+    </div>
+    <p class="note" style="margin-top:10px">⚠️ هذه أداة تقديرية تعليمية، النتائج تعتمد على دقة المدخلات وافتراض التشغيل اليومي × 365 يومًا.</p>
+  </main>
+
+  <footer class="footer">
+    <div class="container">© 2025 – واجهة توعوية مبسطة. ليست منصة رسمية.</div>
+  </footer>
+
+  <script>
+    const thresholdsDefault = [
+      {label:'A', max:80},
+      {label:'B', max:120},
+      {label:'C', max:160},
+      {label:'D', max:200},
+    ];
+
+    const fmt = n => (isFinite(n)? n.toLocaleString('en-US', {maximumFractionDigits:1}) : '0');
+
+    function renderThresholds(th){
+      const tbody = document.querySelector('#thresholdTable tbody');
+      tbody.innerHTML = '';
+      th.forEach(row=>{
+        const tr = document.createElement('tr');
+        const tdL = document.createElement('td'); tdL.textContent = row.label;
+        const tdV = document.createElement('td');
+        const inp = document.createElement('input');
+        inp.type='number'; inp.step='0.1'; inp.min='0'; inp.value=row.max;
+        inp.addEventListener('input', e=>{ row.max = parseFloat(e.target.value)||row.max; });
+        tdV.appendChild(inp);
+        tr.appendChild(tdL); tr.appendChild(tdV);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function classify(eui, th){
+      for(const row of th){
+        if(eui <= row.max) return row.label;
+      }
+      return 'E';
+    }
+
+    function labelStyles(letter){
+      const badge = document.getElementById('labelBadge');
+      badge.className = 'badge label-' + letter;
+      badge.textContent = letter;
+      document.getElementById('labelText').textContent = letter;
+    }
+
+    function calc(){
+      const area = parseFloat(document.getElementById('area').value)||0;
+      const acCount = parseFloat(document.getElementById('acCount').value)||0;
+      const acPower = parseFloat(document.getElementById('acPower').value)||0;
+      const acHours = parseFloat(document.getElementById('acHours').value)||0;
+
+      const ltCount = parseFloat(document.getElementById('ltCount').value)||0;
+      const ltPower = parseFloat(document.getElementById('ltPower').value)||0;
+      const ltHours = parseFloat(document.getElementById('ltHours').value)||0;
+
+      const devAnnualInput = parseFloat(document.getElementById('devAnnualInput').value)||0;
+
+      const acAnnual = acCount * acPower * acHours * 365;
+      const ltAnnual = ltCount * ltPower * ltHours * 365;
+      const devAnnual = devAnnualInput;
+
+      const total = acAnnual + ltAnnual + devAnnual;
+      const eui = area>0 ? total / area : 0;
+
+      document.getElementById('acAnnual').textContent = fmt(acAnnual) + ' kWh/سنة';
+      document.getElementById('ltAnnual').textContent = fmt(ltAnnual) + ' kWh/سنة';
+      document.getElementById('devAnnual').textContent = fmt(devAnnual) + ' kWh/سنة';
+      document.getElementById('totalAnnual').textContent = fmt(total) + ' kWh/سنة';
+      document.getElementById('eui').textContent = fmt(eui) + ' kWh/m²·سنة';
+
+      const letter = classify(eui, thresholdsDefault);
+      labelStyles(letter);
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', calc);
+    document.getElementById('resetBtn').addEventListener('click', ()=>{ location.reload() });
+    renderThresholds(thresholdsDefault);
+  </script>
+</body>
+</html>
